@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MORAGL Casos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <h1>MORAGL • Asignación de Casos</h1>
+  {% if current_user %}
+  <nav>
+    {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('upload') }}">Cargar</a>
+      <a href="{{ url_for('cases') }}">Casos</a>
+      <a href="{{ url_for('users') }}">Usuarios</a>
+      <a href="{{ url_for('logs') }}">Logs</a>
+      <a href="{{ url_for('export') }}">Exportar</a>
+    {% else %}
+      <a href="{{ url_for('operator_cases') }}">Mis casos</a>
+    {% endif %}
+    <a href="{{ url_for('logout') }}">Salir</a>
+  </nav>
+  {% endif %}
+</header>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="flash {{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>
