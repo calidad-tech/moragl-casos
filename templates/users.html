@@ -1,22 +1,5 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Usuarios</h2>
-<div class="card">
-  <form method="post" class="grid">
-    <div><label>Usuario</label><input name="username" required></div>
-    <div><label>Nombre operador</label><input name="display_name" required placeholder="Debe coincidir con operador del CSV"></div>
-    <div><label>Clave</label><input name="password" required></div>
-    <div><label>Rol</label><select name="role"><option value="operator">Operador</option><option value="admin">Admin</option></select></div>
-    <div><button class="btn">Crear usuario</button></div>
-  </form>
-</div>
-
-<table>
-<thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Activo</th></tr></thead>
-<tbody>
-{% for r in rows %}
-<tr><td>{{ r.username }}</td><td>{{ r.display_name }}</td><td>{{ r.role }}</td><td>{{ 'Sí' if r.active else 'No' }}</td></tr>
-{% endfor %}
-</tbody>
-</table>
+{% extends "base.html" %}{% block content %}
+<div class="hero"><div><h2>Usuarios</h2><p>Alta de operadores y administradores.</p></div></div>
+<div class="card"><form method="post" class="grid"><div><label>Usuario</label><input name="username" required></div><div><label>Nombre operador</label><input name="display_name" required placeholder="Debe coincidir con operador del CSV"></div><div><label>Clave</label><input name="password" required></div><div><label>Rol</label><select name="role"><option value="operator">Operador</option><option value="admin">Admin</option></select></div><div><button class="btn">Crear usuario</button></div></form></div>
+<div class="table-wrap"><table><thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Activo</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{ r.username }}</td><td>{{ r.display_name }}</td><td>{{ r.role }}</td><td>{{ 'Sí' if r.active else 'No' }}</td></tr>{% endfor %}</tbody></table></div>
 {% endblock %}

@@ -1,14 +1,3 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="login-card">
-  <h2>Ingresar</h2>
-  <form method="post">
-    <label>Usuario</label>
-    <input name="username" required autofocus>
-    <label>Clave</label>
-    <input name="password" type="password" required>
-    <button class="btn">Entrar</button>
-  </form>
-  <p class="muted">Usuario inicial: admin / admin123</p>
-</div>
+{% extends "base.html" %}{% block content %}
+<div class="login-card"><h2>Ingresar</h2><form method="post"><label>Usuario</label><input name="username" required autofocus><label>Clave</label><input name="password" type="password" required><br><br><button class="btn" style="width:100%">Entrar</button></form><p class="muted small" style="text-align:center">Usuario inicial: admin / admin123</p></div>
 {% endblock %}

@@ -1,17 +1,5 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Cargar reporte CSV</h2>
-<div class="card">
-  <form method="post" enctype="multipart/form-data">
-    <label>Archivo CSV</label>
-    <input type="file" name="file" accept=".csv,text/csv" required>
-    <label>Operador si el CSV no trae operador</label>
-    <input name="default_operator" value="SIN ASIGNAR">
-    <label class="check"><input type="checkbox" name="replace" value="1"> Actualizar casos existentes por DNI + DID</label>
-    <button class="btn">Cargar</button>
-  </form>
-</div>
-<div class="hint">
-  Encabezados aceptados: <b>did/id/id_deuda</b>, <b>dni/documento</b>, <b>operador/agente</b>.
-</div>
+{% extends "base.html" %}{% block content %}
+<div class="hero"><div><h2>Cargar reporte CSV</h2><p>Subí el archivo con DNI, DID e idealmente operador asignado.</p></div></div>
+<div class="card"><form method="post" enctype="multipart/form-data"><label>Archivo CSV</label><input type="file" name="file" accept=".csv,text/csv" required><label>Operador si el CSV no trae operador</label><input name="default_operator" value="SIN ASIGNAR"><label class="check"><input type="checkbox" name="replace" value="1"> Actualizar casos existentes por DNI + DID</label><br><button class="btn">Cargar reporte</button></form></div>
+<div class="hint">Encabezados aceptados: <b>did/id/id_deuda</b>, <b>dni/documento</b>, <b>operador/agente</b>.</div>
 {% endblock %}

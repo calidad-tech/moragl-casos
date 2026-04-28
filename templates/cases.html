@@ -1,51 +1,5 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Casos</h2>
-<form class="filters" method="get">
-  <input name="q" value="{{ q }}" placeholder="Buscar DNI, DID, operador u observación">
-  <select name="operator">
-    <option value="">Todos los operadores</option>
-    {% for op in operators %}
-      <option value="{{ op.operator }}" {% if operator == op.operator %}selected{% endif %}>{{ op.operator }}</option>
-    {% endfor %}
-  </select>
-  <select name="status">
-    <option value="">Todos los estados</option>
-    {% for st in ['pendiente','abierto','trabajado','sin_gestion','error'] %}
-      <option value="{{ st }}" {% if status == st %}selected{% endif %}>{{ st }}</option>
-    {% endfor %}
-  </select>
-  <button class="btn secondary">Filtrar</button>
-</form>
-
-<div class="table-wrap">
-<table>
-<thead><tr><th>#</th><th>Operador</th><th>DNI</th><th>DID</th><th>Estado</th><th>Fechas</th><th>Obs</th><th>Acciones</th></tr></thead>
-<tbody>
-{% for r in rows %}
-<tr>
-  <td>{{ loop.index }}</td>
-  <td>{{ r.operator }}</td>
-  <td>{{ r.dni }}</td>
-  <td>{{ r.did }}</td>
-  <td><span class="pill {{ r.status }}">{{ r.status }}</span></td>
-  <td class="small">Carga: {{ r.created_at }}<br>Abierto: {{ r.opened_at or '-' }}<br>Trabajado: {{ r.worked_at or '-' }}</td>
-  <td>{{ r.notes }}</td>
-  <td>
-    <a class="btn smallbtn" target="_blank" href="{{ url_for('open_case', case_id=r.id) }}">Abrir CRM</a>
-    <form method="post" action="{{ url_for('update_case', case_id=r.id) }}" class="inline-form">
-      <select name="status">
-        {% for st in ['pendiente','abierto','trabajado','sin_gestion','error'] %}
-          <option value="{{ st }}" {% if r.status == st %}selected{% endif %}>{{ st }}</option>
-        {% endfor %}
-      </select>
-      <input name="notes" value="{{ r.notes or '' }}" placeholder="Observación">
-      <button class="btn secondary smallbtn">Guardar</button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
+{% extends "base.html" %}{% block content %}
+<div class="hero"><div><h2>Casos</h2><p>Vista general para supervisión, control y actualización manual.</p></div></div>
+<form class="filters" method="get"><input name="q" value="{{ q }}" placeholder="Buscar DNI, DID, operador u observación"><select name="operator"><option value="">Todos los operadores</option>{% for op in operators %}<option value="{{ op.operator }}" {% if operator == op.operator %}selected{% endif %}>{{ op.operator }}</option>{% endfor %}</select><select name="status"><option value="">Todos los estados</option>{% for st in ['pendiente','abierto','trabajado','sin_gestion','error'] %}<option value="{{ st }}" {% if status == st %}selected{% endif %}>{{ st.replace('_',' ') }}</option>{% endfor %}</select><button class="btn secondary">Filtrar</button></form>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Operador</th><th>DNI</th><th>DID</th><th>Estado</th><th>Fechas</th><th>Obs</th><th>Acciones</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{ loop.index }}</td><td><b>{{ r.operator }}</b></td><td>{{ r.dni }}</td><td>{{ r.did }}</td><td><span class="pill {{ r.status }}">{{ r.status.replace('_',' ') }}</span></td><td class="small"><b>Carga:</b> {{ r.created_at }}<br><b>Abierto:</b> {{ r.opened_at or '-' }}<br><b>Trabajado:</b> {{ r.worked_at or '-' }}</td><td>{{ r.notes or '-' }}</td><td class="actions-cell"><a class="crm-link" target="_blank" href="{{ url_for('open_case', case_id=r.id) }}">Abrir CRM</a><form method="post" action="{{ url_for('update_case', case_id=r.id) }}" class="inline-form"><select name="status">{% for st in ['pendiente','abierto','trabajado','sin_gestion','error'] %}<option value="{{ st }}" {% if r.status == st %}selected{% endif %}>{{ st.replace('_',' ') }}</option>{% endfor %}</select><input name="notes" value="{{ r.notes or '' }}" placeholder="Observación"><button class="btn secondary smallbtn">Guardar</button></form></td></tr>{% else %}<tr><td colspan="8" class="muted">No hay casos para este filtro.</td></tr>{% endfor %}</tbody></table></div>
 {% endblock %}

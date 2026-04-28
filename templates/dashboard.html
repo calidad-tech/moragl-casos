@@ -1,25 +1,5 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Dashboard supervisor</h2>
-<div class="stats">
-  <div><span>Total</span><b>{{ stats.total or 0 }}</b></div>
-  <div><span>Pendientes</span><b>{{ stats.pendiente or 0 }}</b></div>
-  <div><span>Abiertos</span><b>{{ stats.abierto or 0 }}</b></div>
-  <div><span>Trabajados</span><b>{{ stats.trabajado or 0 }}</b></div>
-  <div><span>Errores</span><b>{{ stats.error or 0 }}</b></div>
-</div>
-
-<h3>Avance por operador</h3>
-<div class="cards">
-{% for r in by_operator %}
-  {% set pct = ((r.trabajado or 0) * 100 / r.total) if r.total else 0 %}
-  <div class="card">
-    <h4>{{ r.operator }}</h4>
-    <b>{{ "%.0f"|format(pct) }}%</b>
-    <p>Total {{ r.total }} • Pend {{ r.pendiente or 0 }} • Ab {{ r.abierto or 0 }} • Trab {{ r.trabajado or 0 }} • S/G {{ r.sin_gestion or 0 }} • Error {{ r.error or 0 }}</p>
-  </div>
-{% else %}
-  <p class="muted">Todavía no hay casos cargados.</p>
-{% endfor %}
-</div>
+{% extends "base.html" %}{% block content %}
+<div class="hero"><div><h2>Dashboard supervisor</h2><p>Seguimiento general de carga, apertura y gestión de casos.</p></div></div>
+<div class="stats"><div><span>Total</span><b>{{ stats.total or 0 }}</b></div><div><span>Pendientes</span><b>{{ stats.pendiente or 0 }}</b></div><div><span>Abiertos</span><b>{{ stats.abierto or 0 }}</b></div><div><span>Trabajados</span><b>{{ stats.trabajado or 0 }}</b></div><div><span>Errores</span><b>{{ stats.error or 0 }}</b></div></div>
+<h3>Avance por operador</h3><div class="cards">{% for r in by_operator %}{% set pct = ((r.trabajado or 0) * 100 / r.total) if r.total else 0 %}<div class="card"><h4>{{ r.operator }}</h4><b>{{ "%.0f"|format(pct) }}%</b><p class="muted">Total {{ r.total }} • Pend {{ r.pendiente or 0 }} • Ab {{ r.abierto or 0 }} • Trab {{ r.trabajado or 0 }} • S/G {{ r.sin_gestion or 0 }} • Error {{ r.error or 0 }}</p></div>{% else %}<p class="muted">Todavía no hay casos cargados.</p>{% endfor %}</div>
 {% endblock %}
