@@ -400,7 +400,29 @@ def users():
     with conn() as db:
         rows = db.execute("SELECT * FROM users ORDER BY role, display_name").fetchall()
     return render_template("users.html", rows=rows)
+@app.route("/users/<int:user_id>/delete", methods=["POST"])
+@admin_required
+def delete_user(user_id):
+    u = current_user()
+    with conn() as db:
+        target = db.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+        if not target:
+            flash("Usuario no encontrado.", "error")
+            return redirect(url_for("users"))
 
+        if target["username"] == "admin" or target["id"] == u["id"]:
+            flash("No se puede eliminar el usuario admin ni tu propio usuario.", "error")
+            return redirect(url_for("users"))
+
+        db.execute("DELETE FROM users WHERE id=?", (user_id,))
+        db.execute(
+            "INSERT INTO logs (case_id, username, action, detail, created_at) VALUES (?,?,?,?,?)",
+            (None, u["username"], "elimino_usuario", f"Eliminó usuario {target['username']}", now()),
+        )
+        db.commit()
+
+    flash("Usuario eliminado.", "ok")
+    return redirect(url_for("users"))
 
 @app.route("/logs")
 @admin_required
