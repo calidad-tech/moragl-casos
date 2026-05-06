@@ -2,6 +2,12 @@ import csv
 import io
 import os
 import sqlite3
+
+try:
+    import psycopg2
+    import psycopg2.extras
+except Exception:
+    psycopg2 = None
 from datetime import datetime
 from functools import wraps
 
@@ -10,6 +16,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.environ.get("DB_PATH", os.path.join(APP_DIR, "moragl_casos.db"))
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+USING_POSTGRES = bool(DATABASE_URL and psycopg2)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "cambiar-esta-clave")
@@ -28,7 +36,62 @@ def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def pg_sql(sql):
+    sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+    sql = sql.replace("SUM(status='pendiente')", "SUM(CASE WHEN status='pendiente' THEN 1 ELSE 0 END)")
+    sql = sql.replace("SUM(status='abierto')", "SUM(CASE WHEN status='abierto' THEN 1 ELSE 0 END)")
+    sql = sql.replace("SUM(status='trabajado')", "SUM(CASE WHEN status='trabajado' THEN 1 ELSE 0 END)")
+    sql = sql.replace("SUM(status='sin_gestion')", "SUM(CASE WHEN status='sin_gestion' THEN 1 ELSE 0 END)")
+    sql = sql.replace("SUM(status='error')", "SUM(CASE WHEN status='error' THEN 1 ELSE 0 END)")
+    sql = sql.replace("?", "%s")
+    return sql
+
+
+class PGCursorAdapter:
+    def __init__(self, connection):
+        self.connection = connection
+        self.cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        self.lastrowid = None
+
+    def execute(self, sql, params=()):
+        sql2 = pg_sql(sql)
+        self.lastrowid = None
+        if sql2.strip().lower().startswith("insert into cases") and "returning id" not in sql2.lower():
+            sql2 = sql2.rstrip().rstrip(";") + " RETURNING id"
+            self.cursor.execute(sql2, params)
+            row = self.cursor.fetchone()
+            if row:
+                self.lastrowid = row["id"]
+        else:
+            self.cursor.execute(sql2, params)
+        return self
+
+    def fetchone(self):
+        return self.cursor.fetchone()
+
+    def fetchall(self):
+        return self.cursor.fetchall()
+
+    def commit(self):
+        self.connection.commit()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if exc_type:
+            self.connection.rollback()
+        self.cursor.close()
+        self.connection.close()
+
+
+class SQLiteConnection(sqlite3.Connection):
+    pass
+
+
 def conn():
+    if USING_POSTGRES:
+        return PGCursorAdapter(psycopg2.connect(DATABASE_URL))
     c = sqlite3.connect(DB_PATH)
     c.row_factory = sqlite3.Row
     return c
@@ -394,12 +457,15 @@ def users():
                     )
                     db.commit()
                 flash("Usuario creado.", "ok")
-            except sqlite3.IntegrityError:
+            except Exception:
                 flash("Ese usuario ya existe.", "error")
         return redirect(url_for("users"))
     with conn() as db:
         rows = db.execute("SELECT * FROM users ORDER BY role, display_name").fetchall()
     return render_template("users.html", rows=rows)
+
+
+
 @app.route("/users/<int:user_id>/delete", methods=["POST"])
 @admin_required
 def delete_user(user_id):
@@ -409,20 +475,18 @@ def delete_user(user_id):
         if not target:
             flash("Usuario no encontrado.", "error")
             return redirect(url_for("users"))
-
         if target["username"] == "admin" or target["id"] == u["id"]:
             flash("No se puede eliminar el usuario admin ni tu propio usuario.", "error")
             return redirect(url_for("users"))
-
         db.execute("DELETE FROM users WHERE id=?", (user_id,))
         db.execute(
             "INSERT INTO logs (case_id, username, action, detail, created_at) VALUES (?,?,?,?,?)",
             (None, u["username"], "elimino_usuario", f"Eliminó usuario {target['username']}", now()),
         )
         db.commit()
-
     flash("Usuario eliminado.", "ok")
     return redirect(url_for("users"))
+
 
 @app.route("/logs")
 @admin_required
